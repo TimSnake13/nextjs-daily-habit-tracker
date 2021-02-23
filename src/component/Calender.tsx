@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/Io";
+import Habits from "./Habits";
 
 const START_MONTH = 0;
 const END_MONTH = 11;
 
 const blockCssStyle =
-  "flex h-10 w-14 font-bold justify-center content-center leading-4 rounded-md transition-background-color duration-200 ease-in-out text-grey-600 hover:bg-purple-400 hover:text-gray-100 ";
+  "flex h-10 w-14 font-bold justify-center content-center leading-4 rounded-full transition-background-color duration-200 ease-in-out text-grey-600 relative hover:bg-purple-400 hover:text-gray-100 ";
 const selectedBlockCssStyle = "shadow-md bg-purple-400 text-gray-100 ";
 const secondaryBlockCssStyle = "text-gray-400 ";
+const centerCssStyle = "absolute top-1/2 transform -translate-y-1/2 ";
+const btnCssStyle =
+  "px-5 py-3 rounded-lg bg-indigo-400 hover:bg-indigo-500 text-gray-100";
 
 const Calender = () => {
-  const initialState = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-  const [week, setWeek] = useState(initialState);
+  const week = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
   const year = new Date().getFullYear();
   const monthIndex = new Date().getMonth(); // 0 base
   const date = new Date().getDate();
@@ -149,7 +153,7 @@ const Calender = () => {
               className={blockCssStyle + secondaryBlockCssStyle}
               onClick={() => monthDecrease(_thisDate)}
             >
-              {_thisDate}
+              <p className={centerCssStyle}>{_thisDate}</p>
             </div>
           );
         })}
@@ -170,7 +174,7 @@ const Calender = () => {
             }
             onClick={() => setSelectedTime((s) => ({ ...s, date: idx + 1 }))}
           >
-            {idx + 1}
+            <p className={centerCssStyle}>{idx + 1}</p>
           </div>
         ))}
         {/* Next month */}
@@ -180,6 +184,9 @@ const Calender = () => {
           monthIncrease={monthIncrease}
         />
       </Grid>
+      <div className="mt-10">
+        <Habits />
+      </div>
     </div>
   );
 };
@@ -199,7 +206,7 @@ const NextMonthDays = ({ year, month, monthIncrease }) => {
             className={blockCssStyle + secondaryBlockCssStyle}
             onClick={() => monthIncrease(idx + 1)}
           >
-            <label className="h-1">{idx + 1}</label>
+            <p className={centerCssStyle}>{idx + 1}</p>
           </div>
         );
       })}
@@ -217,15 +224,12 @@ const Button = ({
   disabled?: boolean;
 }) => {
   return (
-    <button
-      className="px-5 py-3 rounded-lg bg-indigo-400 hover:bg-indigo-500 text-gray-100"
-      onClick={onClick}
-      disabled={disabled}
-    >
+    <button className={btnCssStyle} onClick={onClick} disabled={disabled}>
       {children}
     </button>
   );
 };
+
 const Grid = ({ children }) => {
   return (
     <button className="grid grid-cols-7 auto-rows-max gap-4 content-center max-w-2xl mx-auto px-5 cursor-default focus:outline-none mt-4">
