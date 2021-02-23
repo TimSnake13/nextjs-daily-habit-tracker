@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/Io";
 
 const START_MONTH = 0;
 const END_MONTH = 11;
 
 const blockCssStyle =
-  "flex h-10 w-14 justify-center content-center leading-4 rounded-md hover:bg-purple-400 hover:text-gray-100 ";
-const selectedBlockCssStyle = "shadow-md bg-purple-400 font-bold text-gray-100";
+  "flex h-10 w-14 font-bold justify-center content-center leading-4 rounded-md transition-background-color duration-200 ease-in-out text-grey-600 hover:bg-purple-400 hover:text-gray-100 ";
+const selectedBlockCssStyle = "shadow-md bg-purple-400 text-gray-100 ";
+const secondaryBlockCssStyle = "text-gray-400 ";
 
 const Calender = () => {
   const initialState = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -81,14 +83,17 @@ const Calender = () => {
           selectedTime.date
         }`}
       </h1>
-      <div>
+      <div className="flex justify-items-center content-center">
         <Button
           onClick={() => {
             yearDecrease();
           }}
           // disabled={selectedTime.year === year}
         >
-          {"<<"}
+          <div className="flex">
+            <IoIosArrowBack />
+            <IoIosArrowBack />
+          </div>
         </Button>
         <Button
           onClick={() => {
@@ -96,25 +101,36 @@ const Calender = () => {
           }}
           // disabled={selectedTime.year === year && selectedTime.month === 1}
         >
-          {"<"}
+          <IoIosArrowBack />
         </Button>
         <Button
           onClick={() => {
             monthIncrease();
           }}
         >
-          {">"}
+          <IoIosArrowForward />
         </Button>
         <Button
           onClick={() => {
             yearIncrease();
           }}
         >
-          {">>"}
+          <div className="flex">
+            <IoIosArrowForward />
+            <IoIosArrowForward />
+          </div>
         </Button>
       </div>
       <Grid>
-        {week && week.map((day) => <div key={day}>{day}</div>)}
+        {week &&
+          week.map((day) => (
+            <div
+              key={day}
+              // className={(day === "SUN" || day === "SAT") && "text-red-500"}
+            >
+              {day}
+            </div>
+          ))}
         {/* Previous month */}
         {[
           ...Array(
@@ -130,7 +146,7 @@ const Calender = () => {
           return (
             <div
               key={"prev-" + idx}
-              className={blockCssStyle}
+              className={blockCssStyle + secondaryBlockCssStyle}
               onClick={() => monthDecrease(_thisDate)}
             >
               {_thisDate}
@@ -171,17 +187,16 @@ const Calender = () => {
 const NextMonthDays = ({ year, month, monthIncrease }) => {
   const array = [];
   const firstDay = new Date(year, month, 1).getDay();
-  // console.log(year, month, firstDay);
   for (let i = 0; i < 7 - firstDay; i++) {
     array.push(i);
   }
   return (
     <>
-      {[...array].map((item, idx) => {
+      {array.map((_, idx) => {
         return (
           <div
             key={"next-" + idx}
-            className={blockCssStyle}
+            className={blockCssStyle + secondaryBlockCssStyle}
             onClick={() => monthIncrease(idx + 1)}
           >
             <label className="h-1">{idx + 1}</label>
