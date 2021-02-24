@@ -128,6 +128,9 @@ const Habits = () => {
   function toggleIsFinished(id: string) {
     handleUpdateData(id, { toggleIsFinished: true });
   }
+  function toggleIsOpen(id: string) {
+    handleUpdateData(id, { toggleIsOpen: true });
+  }
   function addChildToNode(childID: string, targetId: string) {
     const [children] = findAllData([targetId], data).map((v) => v.childrenIDs);
     if (children?.indexOf(childID) > -1 === false) {
@@ -165,6 +168,7 @@ const Habits = () => {
                 item.childrenIDs && findAllData(item.childrenIDs, data)
               }
               toggleIsFinished={toggleIsFinished}
+              toggleIsOpen={toggleIsOpen}
               // Do a search and send all the children down to this component?
             ></TreeRender>
           )
@@ -175,17 +179,21 @@ const Habits = () => {
 
 interface Props {
   nodeData: Habit;
+  isParentOpen?: boolean;
   childrenNodes?: Habit[];
   allData: Habit[];
   toggleIsFinished: any;
+  toggleIsOpen: any;
   children?: any;
 }
 
 const TreeRender = ({
   nodeData,
+  isParentOpen = true,
   childrenNodes,
   allData,
   toggleIsFinished,
+  toggleIsOpen,
 }: Props) => {
   return (
     <>
@@ -194,9 +202,11 @@ const TreeRender = ({
         nodeData={nodeData}
         allData={allData}
         toggleIsFinished={toggleIsFinished}
+        toggleIsOpen={toggleIsOpen}
+        isParentOpen={isParentOpen}
       >
         {childrenNodes?.map((child) => (
-          <div className="flex items-center">
+          <div key={child.id} className="flex items-center">
             <div className="w-6 h-1"></div>
             <TreeRender
               nodeData={child}
@@ -205,6 +215,8 @@ const TreeRender = ({
               }
               allData={allData}
               toggleIsFinished={toggleIsFinished}
+              toggleIsOpen={toggleIsOpen}
+              isParentOpen={nodeData.isOpen}
             ></TreeRender>
           </div>
         ))}
@@ -215,7 +227,9 @@ const TreeRender = ({
 
 const RecursionHabitNode = ({
   nodeData,
+  isParentOpen = true,
   toggleIsFinished,
+  toggleIsOpen,
   children,
 }: Props) => {
   const { title, isOpen, isFinished } = nodeData;
@@ -224,34 +238,29 @@ const RecursionHabitNode = ({
   const props = useSpring({
     from: { height: "0%", opacity: 0, transform: "translate3d(20px,0,0)" },
     to: {
-      height: isOpen ? "100%" : 0,
-      opacity: isOpen ? 1 : 0,
-      transform: `translate3d(${isOpen ? 0 : 20}px,0,0)`,
+      height: isParentOpen ? "100%" : 0,
+      opacity: isParentOpen ? 1 : 0,
+      transform: `translate3d(${isParentOpen ? 0 : 20}px,0,0)`,
     },
   });
+  // FIXME: why reopen is not working? react spring can not calculate?
 
   return (
     <animated.div style={props}>
-      <div
-        className="flex items-center cursor-pointer"
-        onClick={() => toggleIsFinished(nodeData.id)}
-      >
-        {isFinished ? <AiOutlineCheckSquare /> : <AiOutlineBorder />}{" "}
-        <p className="ml-2">{title}</p>
+      <div className="flex items-center cursor-pointer">
+        <div onClick={() => toggleIsFinished(nodeData.id)}>
+          {isFinished ? <AiOutlineCheckSquare /> : <AiOutlineBorder />}{" "}
+        </div>
+        <p
+          className="ml-2"
+          onClick={() => {
+            if (children) toggleIsOpen(nodeData.id);
+          }}
+        >
+          {title}
+        </p>
       </div>
-
-      {
-        isOpen && children
-        // nodeData.children?.map((child) => (
-        //   <div className="flex items-center">
-        //     <div className="w-6"></div>
-        //     <RecursionHabitNode
-        //       data={child}
-        //       toggleIsFinished={toggleIsFinished}
-        //     />
-        //   </div>
-        // ))
-      }
+      {children}
     </animated.div>
   );
 };
