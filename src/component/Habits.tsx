@@ -1,33 +1,125 @@
-import React, { useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { useSpring, animated } from "react-spring";
 import { AiOutlineBorder, AiOutlineCheckSquare } from "react-icons/ai";
+import { v4 as uuid } from "uuid";
 
-class HabitData {
+class Habit {
+  id: string;
   title: string;
   isOpen: boolean;
   isFinished: boolean;
-  children?: HabitData[];
+  children?: Habit[];
   constructor(title: string) {
+    this.id = uuid();
     this.title = title;
     this.isOpen = true;
     this.isFinished = false;
   }
 }
 
+enum ActionType {
+  ChangeTitle,
+  ToggleOpen,
+  ToggleIsFinished,
+  ChangeChildren,
+}
+
+interface Payload {
+  id: string;
+}
+
+interface Action {
+  type: ActionType;
+  payload: Payload;
+}
+
+const reducer = (state, action: Action) => {
+  switch (action.type) {
+    case ActionType.ToggleOpen:
+      return {};
+  }
+};
+
+const initialState = [] as Habit[];
+
+function searchChildAndUpdate(
+  searchHabitData: Habit,
+  id: string,
+  title?: string,
+  isOpen?: boolean,
+  isFinished?: boolean,
+  children?: Habit[]
+): Habit {
+  const newData = { ...searchHabitData };
+  if (searchHabitData.id !== id && searchHabitData.children) {
+    newData.children = searchHabitData.children.map((item) =>
+      item.id === id
+        ? { ...item, title, isOpen, isFinished, children }
+        : searchChildAndUpdate(item, id, title, isOpen, isFinished, children)
+    );
+  }
+  return newData;
+}
+
 const Habits = () => {
-  const d1 = new HabitData("Running🏃‍ once per day");
+  const [data, setData] = useState<Habit[]>([]);
+  // const [data, dispatch] = useReducer(reducer, initialState)
+
+  function handleUpdateData(
+    id: string,
+    title?: string,
+    isOpen?: boolean,
+    isFinished?: boolean,
+    children?: Habit[]
+  ) {
+    setData((s) =>
+      s.map((item) =>
+        searchChildAndUpdate(item, id, title, isOpen, isFinished, children)
+      )
+    );
+  }
+
+  function newHabit(title: string, belongToID?: string) {
+    const habit = new Habit(title);
+    if (belongToID) {
+      handleUpdateData(belongToID);
+    } else {
+      setData((s) => [...s, habit]);
+    }
+    return habit.id;
+  }
+
+  useEffect(() => {
+    newHabit("30 mins guitar practices");
+    const exerciseID = newHabit("Exercise");
+    newHabit("Running🏃 10km per day‍", exerciseID);
+    newHabit("Swimming🏊‍♂️ 400m at least", exerciseID);
+  }, []);
+
   return (
     <>
-      <HabitNode data={d1}></HabitNode>
+      <button
+        onClick={() => {
+          handleUpdateData("5", "I will try");
+        }}
+      >
+        change state
+      </button>
+      {data.map((_, idx) => (
+        <RecursionHabitNode
+          key={data[idx].id}
+          data={data[idx]}
+        ></RecursionHabitNode>
+      ))}
     </>
   );
 };
 
 interface Props {
-  data: HabitData;
+  data: Habit;
 }
 
-const HabitNode = ({ data }: Props) => {
+const RecursionHabitNode = ({ data }: Props) => {
   const { title, isOpen, isFinished } = data;
 
   const viewHeight = 500;
@@ -46,7 +138,13 @@ const HabitNode = ({ data }: Props) => {
         <p className="ml-2">{title}</p>
       </div>
 
-      {isOpen && data.children?.map((child) => <HabitNode data={child} />)}
+      {/* {isOpen &&
+        data.children?.map((child) => (
+          <div className="flex items-center">
+            <div className="w-6"></div>
+            <RecursionHabitNode data={child} setData={setData} />
+          </div>
+        ))} */}
     </animated.div>
   );
 };
