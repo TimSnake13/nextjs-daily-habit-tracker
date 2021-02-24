@@ -42,20 +42,35 @@ const reducer = (state, action: Action) => {
 
 const initialState = [] as Habit[];
 
+interface ContentToUpdate {
+  newTitle?: string;
+  toggleIsOpen?: boolean;
+  toggleIsFinished?: boolean;
+  children?: Habit[];
+}
+
 function searchChildAndUpdate(
   searchHabitData: Habit,
   id: string,
-  title?: string,
-  isOpen?: boolean,
-  isFinished?: boolean,
-  children?: Habit[]
+  { newTitle, toggleIsOpen, toggleIsFinished, children }: ContentToUpdate
 ): Habit {
   const newData = { ...searchHabitData };
   if (searchHabitData.id !== id && searchHabitData.children) {
     newData.children = searchHabitData.children.map((item) =>
       item.id === id
-        ? { ...item, title, isOpen, isFinished, children }
-        : searchChildAndUpdate(item, id, title, isOpen, isFinished, children)
+        ? {
+            ...item,
+            newTitle,
+            isOpen: toggleIsOpen ? !item.isOpen : item.isOpen,
+            isFinished: toggleIsFinished ? !item.isFinished : item.isFinished,
+            children,
+          }
+        : searchChildAndUpdate(item, id, {
+            newTitle,
+            toggleIsOpen: toggleIsOpen,
+            toggleIsFinished: toggleIsFinished,
+            children,
+          })
     );
   }
   return newData;
@@ -65,16 +80,23 @@ const Habits = () => {
   const [data, setData] = useState<Habit[]>([]);
   // const [data, dispatch] = useReducer(reducer, initialState)
 
+  useEffect(() => {
+    console.table(data);
+  }, [data]);
+
   function handleUpdateData(
     id: string,
-    title?: string,
-    isOpen?: boolean,
-    isFinished?: boolean,
-    children?: Habit[]
+    { newTitle, toggleIsOpen, toggleIsFinished, children }: ContentToUpdate
   ) {
+    // TODO: improve performance
     setData((s) =>
       s.map((item) =>
-        searchChildAndUpdate(item, id, title, isOpen, isFinished, children)
+        searchChildAndUpdate(item, id, {
+          newTitle,
+          toggleIsOpen,
+          toggleIsFinished,
+          children,
+        })
       )
     );
   }
@@ -82,33 +104,41 @@ const Habits = () => {
   function newHabit(title: string, belongToID?: string) {
     const habit = new Habit(title);
     if (belongToID) {
-      handleUpdateData(belongToID);
+      // TODO: how to insert habit into children
+      // handleUpdateData(belongToID);
     } else {
       setData((s) => [...s, habit]);
     }
     return habit.id;
   }
 
+  function toggleIsFinished(id: string) {
+    handleUpdateData(id, { toggleIsFinished: true });
+  }
+
   useEffect(() => {
     newHabit("30 mins guitar practices");
     const exerciseID = newHabit("Exercise");
-    newHabit("Running🏃 10km per day‍", exerciseID);
-    newHabit("Swimming🏊‍♂️ 400m at least", exerciseID);
+    // newHabit("Running🏃 10km per day‍", exerciseID);
+    // newHabit("Swimming🏊‍♂️ 400m at least", exerciseID);
+    newHabit("Running🏃 10km per day‍");
+    newHabit("Swimming🏊‍♂️ 400m at least");
   }, []);
 
   return (
     <>
       <button
         onClick={() => {
-          handleUpdateData("5", "I will try");
+          handleUpdateData("5", { newTitle: "I will try" });
         }}
       >
         change state
       </button>
-      {data.map((_, idx) => (
+      {data.map((item) => (
         <RecursionHabitNode
-          key={data[idx].id}
-          data={data[idx]}
+          key={item.id}
+          data={item}
+          toggleIsFinished={toggleIsFinished}
         ></RecursionHabitNode>
       ))}
     </>
@@ -117,9 +147,10 @@ const Habits = () => {
 
 interface Props {
   data: Habit;
+  toggleIsFinished: any;
 }
 
-const RecursionHabitNode = ({ data }: Props) => {
+const RecursionHabitNode = ({ data, toggleIsFinished }: Props) => {
   const { title, isOpen, isFinished } = data;
 
   const viewHeight = 500;
@@ -131,20 +162,27 @@ const RecursionHabitNode = ({ data }: Props) => {
       transform: `translate3d(${isOpen ? 0 : 20}px,0,0)`,
     },
   });
+
   return (
     <animated.div style={props}>
-      <div className="flex items-center">
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => toggleIsFinished(data.id)}
+      >
         {isFinished ? <AiOutlineCheckSquare /> : <AiOutlineBorder />}{" "}
         <p className="ml-2">{title}</p>
       </div>
 
-      {/* {isOpen &&
+      {isOpen &&
         data.children?.map((child) => (
           <div className="flex items-center">
             <div className="w-6"></div>
-            <RecursionHabitNode data={child} setData={setData} />
+            <RecursionHabitNode
+              data={child}
+              toggleIsFinished={toggleIsFinished}
+            />
           </div>
-        ))} */}
+        ))}
     </animated.div>
   );
 };
