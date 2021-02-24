@@ -34,3 +34,13 @@ class Habit {
 ```
 
 And using a **recursion function** to loop through the children data to find the item with ID.
+
+But it's not easy to maintain the search algorithm? and poor performance? So I decided to change it to
+
+```
+class Habit {
+  id: string;
+  ...
+  children?: string[]; // only store the child id instead of the whole object
+}
+```
