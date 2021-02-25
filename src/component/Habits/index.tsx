@@ -222,8 +222,7 @@ const RecursionHabitNode = ({
       transform: `translateY(${isParentOpen ? "0" : "-20"}px)`,
     },
   });
-  // const inputRef = useRef<HTMLInputElement>()
-  // inputRef.current.value = title;
+  const [isEditMode, setIsEditMode] = useState(false);
   const [titleValue, setTitleValue] = useState(title);
   let timeOutID;
   useEffect(() => {
@@ -233,6 +232,13 @@ const RecursionHabitNode = ({
     };
   }, [titleValue]);
 
+  const handleKeyPress = (e) => {
+    if (e.keyCode === 13) {
+      // If press enter, update title
+      updateTitle(id, titleValue);
+      setIsEditMode(false);
+    }
+  };
   return (
     <animated.div style={props}>
       <div
@@ -251,13 +257,25 @@ const RecursionHabitNode = ({
           }}
         >
           {/* <input ref={inputRef} /> */}
-          <input
-            className="w-full focus:outline-none"
-            value={titleValue}
-            onChange={(e) => {
-              setTitleValue(e.target.value);
-            }}
-          />
+          {isEditMode ? (
+            <input
+              className="w-full focus:outline-none"
+              value={titleValue}
+              onChange={(e) => {
+                setTitleValue(e.target.value);
+              }}
+              onKeyPress={handleKeyPress}
+            />
+          ) : (
+            <p
+              className=""
+              onClick={() => {
+                setIsEditMode(true);
+              }}
+            >
+              {title}
+            </p>
+          )}
         </div>
       </div>
       {children}
