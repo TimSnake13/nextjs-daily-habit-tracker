@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/Io";
 import {
   CgChevronDoubleLeft,
   CgChevronDoubleRight,
@@ -190,9 +189,6 @@ const Calender = () => {
           monthIncrease={monthIncrease}
         />
       </Grid>
-      <div className="mt-10">
-        <Habits />
-      </div>
     </div>
   );
 };

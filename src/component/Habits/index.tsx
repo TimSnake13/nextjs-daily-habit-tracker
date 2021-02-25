@@ -1,56 +1,8 @@
-import React, {
-  HTMLAttributes,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSpring, animated } from "react-spring";
 import { AiOutlineBorder, AiOutlineCheckSquare } from "react-icons/ai";
-import { v4 as uuid } from "uuid";
-
-class Habit {
-  id: string;
-  title: string;
-  isOpen: boolean;
-  isFinished: boolean;
-  childrenIDs: string[];
-  belongToID: string;
-  constructor(title: string, belongToID = "") {
-    this.id = uuid();
-    this.title = title;
-    this.isOpen = true;
-    this.isFinished = false;
-    this.childrenIDs = [];
-    this.belongToID = belongToID;
-  }
-}
-
-enum ActionType {
-  ChangeTitle,
-  ToggleOpen,
-  ToggleIsFinished,
-  ChangeChildren,
-}
-
-interface Payload {
-  id: string;
-}
-
-interface Action {
-  type: ActionType;
-  payload: Payload;
-}
-
-const initialState = [] as Habit[];
-
-interface ContentToUpdate {
-  newTitle?: string;
-  toggleIsOpen?: boolean;
-  toggleIsFinished?: boolean;
-  addChildrenID?: string; // Limited one id per update operation
-  removeChildrenID?: string;
-}
+import { Habit, ContentToUpdate } from "./Habit";
+import ProgressBar from "./ProgressBar";
 
 // Useful for Doc?
 // function searchChildAndUpdate(
@@ -143,6 +95,9 @@ const Habits = () => {
       handleUpdateData(targetId, { addChildrenID: childID });
     }
   }
+  function updateTitle(id: string, newTitle: string) {
+    handleUpdateData(id, { newTitle });
+  }
 
   useEffect(() => {
     newHabit("30 mins guitar practices");
@@ -156,6 +111,7 @@ const Habits = () => {
 
   return (
     <>
+      <ProgressBar data={data} />
       {/* <button
         onClick={() => {
           handleUpdateData("5", { newTitle: "I will try" });
@@ -183,7 +139,7 @@ const Habits = () => {
               }
               toggleIsFinished={toggleIsFinished}
               toggleIsOpen={toggleIsOpen}
-              // Do a search and send all the children down to this component?
+              updateTitle={updateTitle}
             ></TreeRender>
           )
       )}
@@ -191,13 +147,14 @@ const Habits = () => {
   );
 };
 
-interface Props {
+interface TreeProps {
   nodeData: Habit;
   isParentOpen?: boolean;
   childrenNodes?: Habit[];
   allData: Habit[];
   toggleIsFinished: any;
   toggleIsOpen: any;
+  updateTitle: (id: string, newTitle: string) => void;
   children?: any;
 }
 
@@ -208,7 +165,8 @@ const TreeRender = ({
   allData,
   toggleIsFinished,
   toggleIsOpen,
-}: Props) => {
+  updateTitle,
+}: TreeProps) => {
   return (
     <>
       <RecursionHabitNode
@@ -217,10 +175,11 @@ const TreeRender = ({
         allData={allData}
         toggleIsFinished={toggleIsFinished}
         toggleIsOpen={toggleIsOpen}
+        updateTitle={updateTitle}
         isParentOpen={isParentOpen}
       >
         {childrenNodes?.map((child) => (
-          <div key={child.id} className="flex items-center">
+          <div key={child.id} className="w-full flex items-center">
             <div className="w-6 h-1"></div>
             <TreeRender
               nodeData={child}
@@ -230,6 +189,7 @@ const TreeRender = ({
               allData={allData}
               toggleIsFinished={toggleIsFinished}
               toggleIsOpen={toggleIsOpen}
+              updateTitle={updateTitle}
               isParentOpen={nodeData.isOpen}
             ></TreeRender>
           </div>
@@ -244,37 +204,61 @@ const RecursionHabitNode = ({
   isParentOpen = true,
   toggleIsFinished,
   toggleIsOpen,
+  updateTitle,
   children,
-}: Props) => {
-  const { title, isOpen, isFinished } = nodeData;
+}: TreeProps) => {
+  const { id, title, isOpen, isFinished } = nodeData;
   const props = useSpring({
-    from: { height: "0rem", opacity: 0, transform: "translateY(-20px)" },
+    from: {
+      width: "100%",
+      height: "0rem",
+      opacity: 0,
+      transform: "translateY(-20px)",
+    },
     to: {
-      height: isParentOpen ? "1.25rem" : "0rem",
+      width: "100%",
+      height: isParentOpen ? "1.5rem" : "0rem",
       opacity: isParentOpen ? 1 : 0,
       transform: `translateY(${isParentOpen ? "0" : "-20"}px)`,
     },
   });
+  // const inputRef = useRef<HTMLInputElement>()
+  // inputRef.current.value = title;
+  const [titleValue, setTitleValue] = useState(title);
+  let timeOutID;
+  useEffect(() => {
+    timeOutID = setTimeout(() => updateTitle(id, titleValue), 500);
+    return () => {
+      clearTimeout(timeOutID);
+    };
+  }, [titleValue]);
 
   return (
     <animated.div style={props}>
       <div
         className={
-          "flex items-center cursor-pointer " +
+          "w-full flex items-center cursor-pointer " +
           (isParentOpen === false ? "pointer-events-none" : "")
         }
       >
         <div onClick={() => toggleIsFinished(nodeData.id)}>
           {isFinished ? <AiOutlineCheckSquare /> : <AiOutlineBorder />}{" "}
         </div>
-        <p
-          className={"ml-2 cursor-default"}
+        <div
+          className={"ml-2 cursor-default w-full"}
           onClick={() => {
             if (children) toggleIsOpen(nodeData.id);
           }}
         >
-          {title}
-        </p>
+          {/* <input ref={inputRef} /> */}
+          <input
+            className="w-full focus:outline-none"
+            value={titleValue}
+            onChange={(e) => {
+              setTitleValue(e.target.value);
+            }}
+          />
+        </div>
       </div>
       {children}
     </animated.div>
