@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/Io";
+import {
+  CgChevronDoubleLeft,
+  CgChevronDoubleRight,
+  CgChevronLeft,
+  CgChevronRight,
+} from "react-icons/cg";
+
 import Habits from "./Habits";
 
 const START_MONTH = 0;
@@ -12,6 +19,7 @@ const secondaryBlockCssStyle = "text-gray-400 ";
 const centerCssStyle = "absolute top-1/2 transform -translate-y-1/2 ";
 const btnCssStyle =
   "px-5 py-3 rounded-lg bg-indigo-400 hover:bg-indigo-500 text-gray-100";
+const btnSvgSize = "24px";
 
 const Calender = () => {
   const week = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -82,8 +90,8 @@ const Calender = () => {
 
   return (
     <div className="container mx-auto">
-      <h1 className="font-black text-5xl font-mono">
-        {`${selectedTime.year}/${selectedTime.monthIndex + 1}/${
+      <h1 className="font-light text-5xl ">
+        {`${selectedTime.year} / ${selectedTime.monthIndex + 1} / ${
           selectedTime.date
         }`}
       </h1>
@@ -95,8 +103,7 @@ const Calender = () => {
           // disabled={selectedTime.year === year}
         >
           <div className="flex">
-            <IoIosArrowBack />
-            <IoIosArrowBack />
+            <CgChevronDoubleLeft size={btnSvgSize} />
           </div>
         </Button>
         <Button
@@ -105,14 +112,14 @@ const Calender = () => {
           }}
           // disabled={selectedTime.year === year && selectedTime.month === 1}
         >
-          <IoIosArrowBack />
+          <CgChevronLeft size={btnSvgSize} />
         </Button>
         <Button
           onClick={() => {
             monthIncrease();
           }}
         >
-          <IoIosArrowForward />
+          <CgChevronRight size={btnSvgSize} />
         </Button>
         <Button
           onClick={() => {
@@ -120,8 +127,7 @@ const Calender = () => {
           }}
         >
           <div className="flex">
-            <IoIosArrowForward />
-            <IoIosArrowForward />
+            <CgChevronDoubleRight size={btnSvgSize} />
           </div>
         </Button>
       </div>
@@ -224,8 +230,12 @@ const Button = ({
   disabled?: boolean;
 }) => {
   return (
-    <button className={btnCssStyle} onClick={onClick} disabled={disabled}>
-      {children}
+    <button
+      className={blockCssStyle + selectedBlockCssStyle}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      <div className={centerCssStyle}>{children}</div>
     </button>
   );
 };

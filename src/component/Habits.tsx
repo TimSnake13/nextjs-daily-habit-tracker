@@ -1,4 +1,10 @@
-import React, { HTMLAttributes, useEffect, useReducer, useState } from "react";
+import React, {
+  HTMLAttributes,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import { useSpring, animated } from "react-spring";
 import { AiOutlineBorder, AiOutlineCheckSquare } from "react-icons/ai";
 import { v4 as uuid } from "uuid";
@@ -81,7 +87,6 @@ function findAllData(ids: string[], dataSet: Habit[]) {
 
 const Habits = () => {
   const [data, setData] = useState<Habit[]>([]);
-  // const [data, dispatch] = useReducer(reducer, initialState)
 
   useEffect(() => {
     console.table(data);
@@ -145,17 +150,26 @@ const Habits = () => {
     newHabit("Running🏃 10km per day‍", exerciseID);
     const swimmingID = newHabit("Swimming🏊‍♂️  30mins at least", exerciseID);
     newHabit("400 meters * 5", swimmingID);
-    // newHabit("Swimming🏊‍♂️ 400m at least");
   }, []);
+
+  const inputRef = useRef<HTMLInputElement>();
 
   return (
     <>
-      <button
+      {/* <button
         onClick={() => {
           handleUpdateData("5", { newTitle: "I will try" });
         }}
       >
         change state
+      </button> */}
+      <input ref={inputRef} placeholder={"New habit"}></input>
+      <button
+        onClick={() => {
+          newHabit(inputRef.current.value);
+        }}
+      >
+        New Habit
       </button>
       {data.map(
         (item) =>
@@ -233,26 +247,28 @@ const RecursionHabitNode = ({
   children,
 }: Props) => {
   const { title, isOpen, isFinished } = nodeData;
-
-  const viewHeight = 500;
   const props = useSpring({
-    from: { height: "0%", opacity: 0, transform: "translate3d(20px,0,0)" },
+    from: { height: "0rem", opacity: 0, transform: "translateY(-20px)" },
     to: {
-      height: isParentOpen ? "100%" : 0,
+      height: isParentOpen ? "1.25rem" : "0rem",
       opacity: isParentOpen ? 1 : 0,
-      transform: `translate3d(${isParentOpen ? 0 : 20}px,0,0)`,
+      transform: `translateY(${isParentOpen ? "0" : "-20"}px)`,
     },
   });
-  // FIXME: why reopen is not working? react spring can not calculate?
 
   return (
     <animated.div style={props}>
-      <div className="flex items-center cursor-pointer">
+      <div
+        className={
+          "flex items-center cursor-pointer " +
+          (isParentOpen === false ? "pointer-events-none" : "")
+        }
+      >
         <div onClick={() => toggleIsFinished(nodeData.id)}>
           {isFinished ? <AiOutlineCheckSquare /> : <AiOutlineBorder />}{" "}
         </div>
         <p
-          className="ml-2"
+          className={"ml-2 cursor-default"}
           onClick={() => {
             if (children) toggleIsOpen(nodeData.id);
           }}
