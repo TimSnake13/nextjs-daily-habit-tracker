@@ -44,3 +44,12 @@ class Habit {
   children?: string[]; // only store the child id instead of the whole object
 }
 ```
+
+Problem:
+
+How to track the children's height of a root node, in order to render the next node at the right position instead of on top of the previous node's child
+
+TODO:
+
+1. habit set repeat date (everyday, every X day, every week, every month)
+2. Auto populate the calender

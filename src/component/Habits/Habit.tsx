@@ -10,7 +10,7 @@ export class Habit {
   constructor(title: string, belongToID = "") {
     this.id = uuid();
     this.title = title;
-    this.isOpen = true;
+    this.isOpen = false;
     this.isFinished = false;
     this.childrenIDs = [];
     this.belongToID = belongToID;

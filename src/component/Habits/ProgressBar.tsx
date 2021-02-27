@@ -15,7 +15,11 @@ const ProgressBar = ({ data }: Props) => {
     height: 0.25 + "rem",
     width: percentage + "%",
   };
-  return <div className="bg-indigo-300" style={progressBarStyle}></div>;
+  return (
+    <div className="bg-indigo-100 mb-2">
+      <div className="bg-indigo-300" style={progressBarStyle}></div>
+    </div>
+  );
 };
 
 export default ProgressBar;

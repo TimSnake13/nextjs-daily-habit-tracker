@@ -5,8 +5,7 @@ import {
   CgChevronLeft,
   CgChevronRight,
 } from "react-icons/cg";
-
-import Habits from "./Habits";
+import { TrackingData } from "./types";
 
 const START_MONTH = 0;
 const END_MONTH = 11;
@@ -14,13 +13,22 @@ const END_MONTH = 11;
 const blockCssStyle =
   "flex h-10 w-14 font-bold justify-center content-center leading-4 rounded-full transition-background-color duration-200 ease-in-out text-grey-600 relative hover:bg-purple-400 hover:text-gray-100 ";
 const selectedBlockCssStyle = "shadow-md bg-purple-400 text-gray-100 ";
+
+const skipDayBlockCssStyle = "shadow-none bg-gray-300 text-gray-800 ";
+const halfFinishedDayBlockCssStyle = "shadow-none bg-green-200 text-gray-100 ";
+const finishedDayBlockCssStyle = "shadow-none bg-green-400 text-gray-100 ";
+
 const secondaryBlockCssStyle = "text-gray-400 ";
 const centerCssStyle = "absolute top-1/2 transform -translate-y-1/2 ";
 const btnCssStyle =
   "px-5 py-3 rounded-lg bg-indigo-400 hover:bg-indigo-500 text-gray-100";
 const btnSvgSize = "24px";
 
-const Calender = () => {
+interface Props {
+  savedTrackingDataArray: TrackingData[];
+}
+
+const Calender = ({ savedTrackingDataArray }: Props) => {
   const week = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
   const year = new Date().getFullYear();

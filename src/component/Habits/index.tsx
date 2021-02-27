@@ -3,6 +3,8 @@ import { useSpring, animated } from "react-spring";
 import { AiOutlineBorder, AiOutlineCheckSquare } from "react-icons/ai";
 import { Habit, ContentToUpdate } from "./Habit";
 import ProgressBar from "./ProgressBar";
+import { CgAddR, CgCheckR } from "react-icons/cg";
+import { TrackingData } from "../types";
 
 // Useful for Doc?
 // function searchChildAndUpdate(
@@ -37,22 +39,37 @@ function findAllData(ids: string[], dataSet: Habit[]) {
   return dataSet.filter((item) => ids.indexOf(item.id) > -1);
 }
 
-const Habits = () => {
+interface Props {
+  savedTrackingDataArray: TrackingData[];
+  updateTrackingData: (newData: TrackingData) => void;
+}
+
+const Habits = ({ savedTrackingDataArray, updateTrackingData }: Props) => {
   const [data, setData] = useState<Habit[]>([]);
 
   useEffect(() => {
     console.table(data);
+    const newTrackingData = new TrackingData();
+    // FIXME: 第一天创建的时候，id = 0 ？
+    updateTrackingData();
   }, [data]);
 
-  /** Create new Habit to data state, return the new habit id */
-  function newHabit(title: string, belongToID = "") {
-    const habit = new Habit(title, belongToID);
+  /** Create new Habit to **data** state, return the new habit id */
+  function newHabit(title: string) {
+    const habit = new Habit(title);
     setData((s) => [...s, habit]);
-    if (belongToID) {
-      addChildToNode(habit.id, belongToID);
-    }
     return habit.id;
   }
+  // FIXME: using belongToID add to child works fine, but the render of the children is not working properly.
+  // Maybe use 'resize-observer-polyfill':  https://codesandbox.io/embed/lp80n9z7v9
+  // function newHabit(title: string, belongToID = "") {
+  //   const habit = new Habit(title, belongToID);
+  //   setData((s) => [...s, habit]);
+  //   if (belongToID) {
+  //     addChildToNode(habit.id, belongToID);
+  //   }
+  //   return habit.id;
+  // }
 
   function handleUpdateData(
     id: string,
@@ -101,16 +118,19 @@ const Habits = () => {
 
   useEffect(() => {
     newHabit("30 mins guitar practices");
-    const exerciseID = newHabit("Exercise");
-    newHabit("Running🏃 10km per day‍", exerciseID);
-    const swimmingID = newHabit("Swimming🏊‍♂️  30mins at least", exerciseID);
-    newHabit("400 meters * 5", swimmingID);
+    newHabit("Running🏃 10km per day‍");
+    newHabit("Swimming🏊‍♂️  30mins at least");
+    // newHabit("400 meters * 5", swimmingID);
   }, []);
 
   const inputRef = useRef<HTMLInputElement>();
 
   return (
-    <>
+    <div className={"container px-16"}>
+      <div className="flex items-center py-2">
+        <CgCheckR />
+        <p className="ml-4">我的习惯：</p>
+      </div>
       <ProgressBar data={data} />
       {/* <button
         onClick={() => {
@@ -119,14 +139,7 @@ const Habits = () => {
       >
         change state
       </button> */}
-      <input ref={inputRef} placeholder={"New habit"}></input>
-      <button
-        onClick={() => {
-          newHabit(inputRef.current.value);
-        }}
-      >
-        New Habit
-      </button>
+
       {data.map(
         (item) =>
           !item.belongToID && ( // Skip render children node from root
@@ -143,7 +156,23 @@ const Habits = () => {
             ></TreeRender>
           )
       )}
-    </>
+      <div className="flex items-center py-2">
+        <button
+          // className="ml-4 border border-gray-900 px-2 py-1"
+          className="cursor-pointer"
+          onClick={() => {
+            if (inputRef.current.value) newHabit(inputRef.current.value);
+          }}
+        >
+          <CgAddR size={20} />
+        </button>
+        <input
+          ref={inputRef}
+          placeholder={"New habit"}
+          className="ml-3"
+        ></input>
+      </div>
+    </div>
   );
 };
 
@@ -251,12 +280,11 @@ const RecursionHabitNode = ({
           {isFinished ? <AiOutlineCheckSquare /> : <AiOutlineBorder />}{" "}
         </div>
         <div
-          className={"ml-2 cursor-default w-full"}
+          className={"ml-4 cursor-default w-full"}
           onClick={() => {
             if (children) toggleIsOpen(nodeData.id);
           }}
         >
-          {/* <input ref={inputRef} /> */}
           {isEditMode ? (
             <input
               className="w-full focus:outline-none"
@@ -268,7 +296,9 @@ const RecursionHabitNode = ({
             />
           ) : (
             <p
-              className=""
+              className={
+                nodeData.isFinished ? "line-through text-gray-200" : ""
+              }
               onClick={() => {
                 setIsEditMode(true);
               }}
