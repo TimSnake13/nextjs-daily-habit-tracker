@@ -1,34 +1,55 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Features
 
-## Getting Started
+- [ ] Calendar, maybe 5000 years?
+  - [ ] Week view
+  - [ ] Month view
+- [ ] Habit tracking
+  - [ ] Options for (Everyday, every X day, X day in a week/month/year)
 
-First, run the development server:
+Habits.tsx
 
-```bash
-npm run dev
-# or
-yarn dev
+At first I was using a single `data` (React.useState) to store all the habits' data
+
+```
+[
+  {id, title, isOpen, isFinished, children}
+]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+But turns out, it was really difficult to update the `data` when I want to click to toggle `isFinished` using `setData(...)`. So Instead I split the data into two parts:
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+- `HabitRelation {id, children?}`: handle the relationship of all the habits
+- `Habit {id, title, isOpen, isFinished}`: store all the habit info and can access/update by using id
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+Then I change the Data Structure it to store
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```
+class Habit {
+  id: string;
+  title: string;
+  isOpen: boolean;
+  isFinished: boolean;
+  children?: Habit[];
+}
+```
 
-## Learn More
+And using a **recursion function** to loop through the children data to find the item with ID.
 
-To learn more about Next.js, take a look at the following resources:
+But it's not easy to maintain the search algorithm? and poor performance? So I decided to change it to
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+class Habit {
+  id: string;
+  ...
+  children?: string[]; // only store the child id instead of the whole object
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+Problem:
 
-## Deploy on Vercel
+How to track the children's height of a root node, in order to render the next node at the right position instead of on top of the previous node's child
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+TODO:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. habit set repeat date (everyday, every X day, every week, every month)
+2. Auto populate the calender
